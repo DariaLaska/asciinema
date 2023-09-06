@@ -11,16 +11,17 @@ class DariasWriter:
     def _accept_clients(self):
         thread = threading.Thread(target=__enter__, args = ())
         thread.start()
+
+
+    def __enter__(self):
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind(self.address)
+        server.listen()
+
         while True:
             conn, address = server.accept()
             self.clients.add(conn)
 
-
-    def __enter__(self):
-
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.bind(self.address)
-        server.listen()
 
     def write_stdin(self, ts: float, data: Any):
         pass
