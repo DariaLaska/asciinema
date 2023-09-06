@@ -1,0 +1,43 @@
+import socket, threading
+
+from wwrite import __enter__
+
+
+class DariasWriter:
+    def __init__(self, address):
+        self.clients = []
+        self.address = address
+
+    def _accept_clients(self):
+        thread = threading.Thread(target=__enter__, args = ())
+        thread.start()
+        while True:
+            conn, address = server.accept()
+            self.clients.add(conn)
+
+
+    def __enter__(self):
+
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind(self.address)
+        server.listen()
+
+    def write_stdin(self, ts: float, data: Any):
+        pass
+
+    def write_stdout(self, ts: float, data: Any):
+        for i in self.clients:
+            i.sendall(data.encode("utf-8"))
+
+    def __exit__(self, ...):
+        #закрыть поток
+        socket.close()
+
+
+if __name__ == '__main__':
+    writer = DariasWriter()
+    with writer:
+        while True:
+            msg = input()
+            writer.write_stdout( msg.encode('utf-8'))
+
