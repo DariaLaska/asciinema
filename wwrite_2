@@ -1,21 +1,27 @@
 import socket, threading
+from typing import Any
+
 
 class DariasWriter:
     def __init__(self, address):
+        self.server = None
         self.clients = []
         self.address = address
+        self.all_msg = b''
 
     def _accept_clients(self):
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server.bind(self.address)
-        server.listen()
         while True:
-            conn, address = server.accept()
-            self.clients.add(conn)
+            conn, address = self.server.accept()
+            conn.sendall(self.all_msg)
+            self.clients.append(conn)
 
 
     def __enter__(self):
-        thread = threading.Thread(target=self._accept_clients(), args=())
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.bind(self.address)
+        self.server.listen()
+
+        thread = threading.Thread(target=self._accept_clients, args=())
         thread.start()
 
 
@@ -23,18 +29,23 @@ class DariasWriter:
         pass
 
     def write_stdout(self, ts: float, data: Any):
+        self.all_msg += data
         for i in self.clients:
-            i.sendall(data.encode("utf-8"))
+            i.sendall(data)
 
-    def __exit__(self, ...):
+    def __exit__(self, exc_type: str, exc_value: str, exc_traceback: str):
         #закрыть поток
         socket.close()
 
 
 if __name__ == '__main__':
-    writer = DariasWriter()
+    IP = "127.0.0.1"
+    port = 5566
+    addr = (IP, port)
+    writer = DariasWriter(addr)
     with writer:
         while True:
             msg = input()
-            writer.write_stdout( msg.encode('utf-8'))
+            ts = 0.1
+            writer.write_stdout(ts, msg.encode('utf-8'))
 
