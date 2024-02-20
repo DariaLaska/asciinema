@@ -3,7 +3,7 @@ from typing import Any
 
 
 class DariasWriter:
-    def __init__(self, address):
+    def __init__(self, address, metadata, append, on_error):
         self.server = None
         self.clients = []
         self.address = address
@@ -23,6 +23,7 @@ class DariasWriter:
 
         thread = threading.Thread(target=self._accept_clients, args=())
         thread.start()
+        return self
 
 
     def write_stdin(self, ts: float, data: Any):
@@ -35,14 +36,14 @@ class DariasWriter:
 
     def __exit__(self, exc_type: str, exc_value: str, exc_traceback: str):
         #закрыть поток
-        socket.close()
+        self.server.close()
 
 
 if __name__ == '__main__':
     IP = "127.0.0.1"
     port = 5566
     addr = (IP, port)
-    writer = DariasWriter(addr)
+    writer = DariasWriter(addr, '', '', '')
     with writer:
         while True:
             msg = input()
